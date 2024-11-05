@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./merchantpos
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"  # Maps port 5173 on the container to port 5173 on the host
+    networks:
+      - app-network
+    depends_on:
+      - backend
+    environment:
+      # Add environment variables as needed for your frontend
+      - VITE_BACKEND_URL=http://backend:5000  # Using the backend service name for internal networking
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"  # Maps port 5000 in the container to port 5000 on the host
+    networks:
+      - app-network
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env  # Use environment variables from the backend's .env file
+    environment:
+      - NODE_ENV=production
+      # Optional: if the database connection string needs to reference the db service
+      - DATABASE_URL=postgresql://postgres:yourpassword@db:5432/zatak
+
+  db:
+    image: postgres:15  # PostgreSQL version
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Aditya@1996
+      POSTGRES_DB: zatak
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist data
+
+# Volumes for database persistence
+volumes:
+  postgres_data:
+
+networks:
+app-network:
+driver: bridge

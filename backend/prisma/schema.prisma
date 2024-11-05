@@ -1,0 +1,435 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["common", "inventory", "leads", "log", "merchant", "sale", "store", "uam", "zatca"]
+}
+
+model addresses {
+  id                  Int                @id @default(autoincrement())
+  address_street_1_en String?            @db.VarChar(255)
+  address_street_1_ar String?            @db.VarChar(255)
+  address_street_2_en String?            @db.VarChar(255)
+  address_street_2_ar String?            @db.VarChar(255)
+  building_no_en      String?            @db.VarChar(20)
+  building_no_ar      String?            @db.VarChar(20)
+  additional_no_en    String?            @db.VarChar(20)
+  additional_no_ar    String?            @db.VarChar(20)
+  city_en             String?            @db.VarChar(100)
+  city_ar             String?            @db.VarChar(100)
+  postal_code_en      String?            @db.VarChar(20)
+  postal_code_ar      String?            @db.VarChar(20)
+  state_en            String?            @db.VarChar(20)
+  state_ar            String?            @db.VarChar(20)
+  district_en         String?            @db.VarChar(20)
+  district_ar         String?            @db.VarChar(20)
+  country_code_en     String?            @db.VarChar(10)
+  country_code_ar     String?            @db.VarChar(10)
+  created_at          DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?          @default(now()) @db.Timestamp(6)
+  merchant_address    merchant_address[]
+  store_address       store_address[]
+
+  @@schema("common")
+}
+
+model products {
+  id             Int              @id @default(autoincrement())
+  name_en        String           @db.VarChar(255)
+  name_ar        String           @db.VarChar(255)
+  product_code   String           @db.VarChar(50)
+  category_en    String?          @db.VarChar(100)
+  category_ar    String?          @db.VarChar(100)
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?        @default(now()) @db.Timestamp(6)
+  stock_products stock_products[]
+  store_products store_products[]
+  items          items[]
+
+  @@schema("inventory")
+}
+
+model stock {
+  id             Int              @id @default(autoincrement())
+  merchant_id    Int
+  store_id       Int
+  user_id        Int
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?        @default(now()) @db.Timestamp(6)
+  merchants      merchants        @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_stock_merchant")
+  stores         stores           @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_stock_store")
+  stock_products stock_products[]
+
+  @@schema("inventory")
+}
+
+model stock_products {
+  stock_id   Int
+  product_id Int
+  quantity   Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_stock_products_product")
+  stock      stock     @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_stock_products_stock")
+
+  @@id([stock_id, product_id])
+  @@schema("inventory")
+}
+
+model store_products {
+  store_id   Int
+  product_id Int
+  price      Decimal   @db.Decimal(10, 2)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_products_product")
+  stores     stores    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_products_store")
+
+  @@id([store_id, product_id])
+  @@schema("inventory")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model contact {
+  id                 Int       @default(autoincrement())
+  name_en            String?   @db.VarChar(100)
+  name_ar            String?   @db.VarChar(100)
+  mobile             BigInt?
+  email              String?   @db.VarChar(50)
+  city               String?   @db.VarChar(50)
+  utm                String?   @db.VarChar(400)
+  interest_category  String?   @db.VarChar(100)
+  contact_preference String?   @db.VarChar(50)
+  created_at         DateTime? @db.Timestamp(6)
+  updated_at         DateTime? @db.Timestamp(6)
+
+  @@ignore
+  @@schema("leads")
+}
+
+model activity_log {
+  id            BigInt    @id @default(autoincrement())
+  user_id       BigInt
+  activity_type String?   @db.VarChar(255)
+  description   String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@schema("log")
+}
+
+model application_log {
+  log_id        Int       @id @default(autoincrement())
+  log_timestamp DateTime? @default(now()) @db.Timestamp(6)
+  log_level     String?   @db.VarChar(50)
+  message       String?
+  context       Json?
+
+  @@schema("log")
+}
+
+model merchant_address {
+  merchant_id Int
+  address_id  Int
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+  addresses   addresses @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_merchant_address_address")
+  merchants   merchants @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_merchant_address_merchant")
+
+  @@id([merchant_id, address_id])
+  @@schema("merchant")
+}
+
+model merchant_stores {
+  merchant_id Int
+  store_id    Int
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+  merchants   merchants @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_merchant_stores_merchant")
+  stores      stores    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_merchant_stores_store")
+
+  @@id([merchant_id, store_id])
+  @@schema("merchant")
+}
+
+model merchants {
+  id               Int                @id @default(autoincrement())
+  name_en          String             @db.VarChar(255)
+  name_ar          String             @db.VarChar(255)
+  status           String             @db.VarChar(50)
+  address_id       Int?
+  vat_no           String?            @db.VarChar(255)
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?          @default(now()) @db.Timestamp(6)
+  password         String?            @db.VarChar(255)
+  phone            String?            @unique @db.VarChar(20)
+  email            String?            @unique @db.VarChar(255)
+  termsAccepted    Boolean?
+  stock            stock[]
+  merchant_address merchant_address[]
+  merchant_stores  merchant_stores[]
+
+  @@schema("merchant")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model allowance {
+  item_id              Int
+  discount_percent     Decimal?  @db.Decimal(10, 2)
+  discount_reason_code String?
+  discount_reason      String?
+  charge_percent       Decimal?  @db.Decimal(10, 2)
+  charge_reason_code   String?
+  charge_reason        String?
+  created_at           DateTime? @default(now()) @db.Timestamp(6)
+  updated_at           DateTime? @default(now()) @db.Timestamp(6)
+
+  @@ignore
+  @@schema("sale")
+}
+
+model items {
+  id                            Int       @id @default(autoincrement())
+  sales_id                      Int
+  line_id                       Int
+  product_id                    Int
+  quantity                      Int
+  unit                          String?
+  price                         Decimal   @db.Decimal(10, 2)
+  net_price                     Decimal   @db.Decimal(18, 2)
+  net_price_currency_code       String
+  net_amount                    Decimal   @db.Decimal(18, 2)
+  net_amount_currency_code      String
+  vat_amount                    Decimal   @db.Decimal(18, 2)
+  vat_amount_currency_code      String
+  total_amount                  Decimal   @db.Decimal(18, 2)
+  total_amount_currency_code    String
+  vat_category_code             String
+  vat_rate                      Decimal   @db.Decimal(5, 2)
+  tax_scheme_id                 String
+  base_amount                   Decimal?  @db.Decimal(18, 2)
+  base_amount_currency_code     String?
+  discount_amount               Decimal?  @db.Decimal(18, 2)
+  discount_amount_currency_code String?
+  charge_amount                 Decimal?  @db.Decimal(18, 2)
+  charge_amount_currency_code   String?
+  created_at                    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at                    DateTime? @default(now()) @db.Timestamp(6)
+  products                      products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_items_product")
+  sales                         sales     @relation(fields: [sales_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_items_sales")
+
+  @@schema("sale")
+}
+
+model sales {
+  id             Int       @id @default(autoincrement())
+  store_id       Int
+  merchant_id    Int
+  user_id        Int
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  payment_method String?   @db.VarChar(30)
+  items          items[]
+
+  @@schema("sale")
+}
+
+model store_address {
+  store_id   Int
+  address_id Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  addresses  addresses @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_address_address")
+  stores     stores    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_address_store")
+
+  @@id([store_id, address_id])
+  @@schema("store")
+}
+
+model store_users {
+  store_id   Int
+  user_id    Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  stores     stores    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_users_store")
+
+  @@id([store_id, user_id])
+  @@schema("store")
+}
+
+model stores {
+  id              Int               @id @default(autoincrement())
+  merchant_id     Int
+  name_en         String            @db.VarChar(255)
+  name_ar         String            @db.VarChar(255)
+  status          String?           @db.VarChar(50)
+  address_id      Int?
+  cr_no           Int
+  scheme          String?           @default("CRN")
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  stock           stock[]
+  store_products  store_products[]
+  merchant_stores merchant_stores[]
+  store_address   store_address[]
+  store_users     store_users[]
+
+  @@schema("store")
+}
+
+model activities {
+  id              Int               @id @default(autoincrement())
+  name_en         String            @db.VarChar(255)
+  name_ar         String            @db.VarChar(255)
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  user_activities user_activities[]
+
+  @@schema("uam")
+}
+
+model roles {
+  id         Int          @id @default(autoincrement())
+  name_en    String       @db.VarChar(100)
+  name_ar    String       @db.VarChar(100)
+  status     String?      @db.VarChar(50)
+  created_at DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at DateTime?    @default(now()) @db.Timestamp(6)
+  user_roles user_roles[]
+
+  @@schema("uam")
+}
+
+model user_activities {
+  user_id     Int
+  activity_id Int
+  created_at  DateTime?  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime?  @default(now()) @db.Timestamp(6)
+  activities  activities @relation(fields: [activity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_activities_activity")
+
+  @@id([user_id, activity_id])
+  @@schema("uam")
+}
+
+model users {
+  id                Int          @id @default(autoincrement()) // Unique identifier
+  username          String       @unique @db.VarChar(255) // Unique username
+  password_hash     String // Hash of the user's password
+  first_name_en     String?      @db.VarChar(255) // User's first name in English
+  last_name_en      String?      @db.VarChar(255) // User's last name in English
+  first_name_ar     String?      @db.VarChar(255) // User's first name in Arabic
+  last_name_ar      String?      @db.VarChar(255) // User's last name in Arabic
+  email             String?      @unique @db.VarChar(255) // Unique email address
+  mobile_no         String?      @unique @db.VarChar(255) // Unique mobile number
+  status            String?      @db.VarChar(255) // Status of the user (e.g., active, inactive)
+  set_password_flag Boolean?     @default(false) // Flag indicating if the user needs to set a password
+  termsAccepted     Boolean? // Flag indicating if terms are accepted
+  created_at        DateTime?    @default(now()) @db.Timestamp(6) // Timestamp of creation
+  updated_at        DateTime?    @default(now()) @db.Timestamp(6) // Timestamp of last update
+  user_roles        user_roles[] // Relation to user_roles model
+
+  @@schema("uam")
+}
+
+model user_roles {
+  user_id    Int
+  role_id    Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+
+  roles roles @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_roles_role")
+  users users @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_roles_user")
+
+  @@id([user_id, role_id]) // Composite primary key
+  @@schema("uam")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model default_value {
+  process_type      String? @default("reporting:1.0")
+  ubl_version       String? @db.VarChar(10)
+  invoice_type_code String? @db.VarChar(10)
+
+  @@ignore
+  @@schema("zatca")
+}
+
+model invoice {
+  id                    Int              @id @default(autoincrement())
+  invoice_no            String
+  invoice_uuid          String
+  invoice_date          DateTime         @db.Date
+  invoice_time          DateTime         @db.Time(6)
+  invoice_type          String
+  invoice_sub_type      String
+  invoice_currency_code String
+  invoice_counter_id    Int
+  previous_invoice_hash String
+  mime_code             String?
+  csid                  String?
+  vat_category          String
+  tax_scheme_id         String
+  ref_invoice_no        String?
+  note_reason           String?
+  discount_flag         Boolean?
+  charge_indicator      Boolean?
+  created_at            DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?        @default(now()) @db.Timestamp(6)
+  merchant_id           BigInt?
+  store_id              BigInt?
+  merchant_invoice_id   BigInt?
+  invoice_amounts       invoice_amounts?
+
+  @@schema("zatca")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model invoice_allowance {
+  id                   Int      @default(autoincrement())
+  invoice_id           Int
+  discount_percent     Decimal? @db.Decimal(10, 2)
+  discount_vat_vatgory String?
+  discount_vat_percent Decimal? @db.Decimal(10, 2)
+  discount_reason_code String?
+  discount_reason      String?
+  discount_tax_scheme  String?
+  charge_percent       Decimal? @db.Decimal(10, 2)
+  charge_vat_vatgory   String?
+  charge_vat_percent   Decimal? @db.Decimal(10, 2)
+  charge_reason_code   String?
+  charge_reason        String?
+  charge_tax_scheme    String?
+
+  @@ignore
+  @@schema("zatca")
+}
+
+model invoice_amounts {
+  invoice_id                          Int       @id
+  total_amount                        Decimal   @db.Decimal(18, 2)
+  total_amount_currency_code          String
+  discount_amount                     Decimal?  @db.Decimal(18, 2)
+  discount_amount_currency_code       String?
+  charge_amount                       Decimal?  @db.Decimal(18, 2)
+  charge_amount_currency_code         String?
+  net_amount                          Decimal   @db.Decimal(18, 2)
+  net_amount_currency_code            String
+  total_vat_amount                    Decimal   @db.Decimal(18, 2)
+  total_vat_amount_currency_code      String
+  total_amount_with_vat               Decimal   @db.Decimal(18, 2)
+  total_amount_with_vat_currency_code String
+  taxable_amount                      Decimal   @db.Decimal(18, 2)
+  taxable_amount_currency_code        String
+  tax_amount                          Decimal   @db.Decimal(18, 2)
+  tax_amount_currency_code            String
+  payment_due_amount                  Decimal   @db.Decimal(18, 2)
+  created_at                          DateTime? @default(now()) @db.Timestamp(6)
+  updated_at                          DateTime? @default(now()) @db.Timestamp(6)
+  invoice                             invoice   @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("zatca")
+}

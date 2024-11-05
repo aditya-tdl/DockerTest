@@ -1,0 +1,447 @@
+// datasource db {
+//     provider = "postgresql"
+//     url      = env("DATABASE_URL")
+// }
+
+// generator client {
+//     provider = "prisma-client-js"
+// }
+
+// // Merchant Model
+// model Merchant {
+//     id                Int               @id @default(autoincrement())
+//     nameEn            String            @db.VarChar(255)
+//     nameAr            String            @db.VarChar(255)
+//     status            String            @db.VarChar(50)
+//     addressId         Int?
+//     vatNo             BigInt?
+//     createdAt         DateTime          @default(now())
+//     updatedAt         DateTime          @updatedAt
+//     address           Address?          @relation(fields: [addressId], references: [id])
+//     stores            MerchantStore[] // One merchant can have many stores
+//     stocks            Stock[] // One merchant can have multiple stocks
+//     merchantAddresses MerchantAddress[] // Many-to-many relationship for merchant addresses
+//     orders            Order[] // One merchant can have multiple orders
+//     Store             Store[]
+// }
+
+// // MerchantAddress Model
+// model MerchantAddress {
+//     merchantId Int
+//     addressId  Int
+//     createdAt  DateTime @default(now())
+//     updatedAt  DateTime @updatedAt
+
+//     // Relationships
+//     merchant Merchant @relation(fields: [merchantId], references: [id])
+//     address  Address  @relation(fields: [addressId], references: [id])
+
+//     // Composite primary key
+//     @@id([merchantId, addressId])
+// }
+
+// // MerchantStore Model
+// model MerchantStore {
+//     merchantId Int
+//     storeId    Int
+//     createdAt  DateTime @default(now())
+//     updatedAt  DateTime @updatedAt
+
+//     // Relationships
+//     merchant Merchant @relation(fields: [merchantId], references: [id])
+//     store    Store    @relation(fields: [storeId], references: [id])
+
+//     // Composite primary key
+//     @@id([merchantId, storeId])
+// }
+
+// // Store Model
+// model Store {
+//     id         Int      @id @default(autoincrement())
+//     merchantId Int
+//     nameEn     String   @db.VarChar(255)
+//     nameAr     String   @db.VarChar(255)
+//     status     String?  @db.VarChar(50)
+//     addressId  Int?
+//     crNo       BigInt
+//     scheme     String?  @default("CRN")
+//     createdAt  DateTime @default(now())
+//     updatedAt  DateTime @updatedAt
+
+//     // Relationships
+//     merchant       Merchant        @relation(fields: [merchantId], references: [id])
+//     storeAddresses StoreAddress[] // Addresses associated with the store
+//     stocks         Stock[] // Stock associated with the store
+//     merchantStores MerchantStore[] // Many-to-many relationship with merchants
+//     storeUsers     StoreUser[] // Users associated with the store
+//     storeProducts  StoreProduct[] // Products available in this store
+//     Order          Order[]
+// }
+
+// // StoreAddress Model
+// model StoreAddress {
+//     storeId   Int
+//     addressId Int
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+
+//     // Relationships
+//     store   Store   @relation(fields: [storeId], references: [id])
+//     address Address @relation(fields: [addressId], references: [id])
+
+//     // Composite primary key
+//     @@id([storeId, addressId])
+// }
+
+// // StoreUser Model
+// model StoreUser {
+//     storeId   Int
+//     userId    Int
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+
+//     // Relationships
+//     store Store @relation(fields: [storeId], references: [id])
+//     // Define User model relation here if User model is available
+
+//     // Composite primary key
+//     @@id([storeId, userId])
+// }
+
+// // Stock Model
+// model Stock {
+//     id         Int      @id @default(autoincrement())
+//     merchantId Int
+//     storeId    Int
+//     userId     Int
+//     createdAt  DateTime @default(now())
+//     updatedAt  DateTime @updatedAt
+
+//     // Relationships
+//     merchant      Merchant       @relation(fields: [merchantId], references: [id])
+//     store         Store          @relation(fields: [storeId], references: [id])
+//     stockProducts StockProduct[] // One stock can have many stock products
+// }
+
+// // Product Model
+// model Product {
+//     id            Int            @id @default(autoincrement())
+//     nameEn        String         @db.VarChar(255)
+//     nameAr        String         @db.VarChar(255)
+//     productCode   String         @db.VarChar(50)
+//     categoryEn    String?        @db.VarChar(100)
+//     categoryAr    String?        @db.VarChar(100)
+//     createdAt     DateTime       @default(now())
+//     updatedAt     DateTime       @updatedAt
+//     stockProducts StockProduct[] // Product stocks in the inventory
+//     storeProducts StoreProduct[] // Product availability in stores
+// }
+
+// // StockProduct Model
+// model StockProduct {
+//     stockId   Int
+//     productId Int
+//     quantity  Int
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+
+//     // Relationships
+//     stock   Stock   @relation(fields: [stockId], references: [id])
+//     product Product @relation(fields: [productId], references: [id])
+
+//     // Composite primary key
+//     @@id([stockId, productId])
+// }
+
+// // StoreProduct Model
+// model StoreProduct {
+//     storeId   Int
+//     productId Int
+//     price     Float
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+
+//     // Relationships
+//     store   Store   @relation(fields: [storeId], references: [id])
+//     product Product @relation(fields: [productId], references: [id])
+
+//     // Composite primary key
+//     @@id([storeId, productId])
+// }
+
+// // Address Model
+// model Address {
+//     id               Int      @id @default(autoincrement())
+//     addressStreet1En String?  @db.VarChar(255)
+//     addressStreet1Ar String?  @db.VarChar(255)
+//     addressStreet2En String?  @db.VarChar(255)
+//     addressStreet2Ar String?  @db.VarChar(255)
+//     buildingNoEn     String?  @db.VarChar(20)
+//     buildingNoAr     String?  @db.VarChar(20)
+//     additionalNoEn   String?  @db.VarChar(20)
+//     additionalNoAr   String?  @db.VarChar(20)
+//     cityEn           String?  @db.VarChar(100)
+//     cityAr           String?  @db.VarChar(100)
+//     postalCodeEn     String?  @db.VarChar(20)
+//     postalCodeAr     String?  @db.VarChar(20)
+//     stateEn          String?  @db.VarChar(20)
+//     stateAr          String?  @db.VarChar(20)
+//     districtEn       String?  @db.VarChar(20)
+//     districtAr       String?  @db.VarChar(20)
+//     countryCodeEn    String?  @db.VarChar(10)
+//     countryCodeAr    String?  @db.VarChar(10)
+//     createdAt        DateTime @default(now())
+//     updatedAt        DateTime @updatedAt
+
+//     // Relationships
+//     merchantAddresses MerchantAddress[] // Addresses associated with merchants
+//     merchants         Merchant[] // One address can be linked to multiple merchants
+//     storeAddresses    StoreAddress[] // Addresses associated with stores
+// }
+
+// // Order Model
+// model Order {
+//     id         Int      @id @default(autoincrement())
+//     merchantId Int
+//     storeId    Int
+//     userId     Int // Assuming there's a user model to relate to
+//     orderDate  DateTime @default(now())
+//     status     String   @db.VarChar(50) // Status of the order (e.g., pending, completed)
+//     createdAt  DateTime @default(now())
+//     updatedAt  DateTime @updatedAt
+
+//     // Relationships
+//     merchant Merchant @relation(fields: [merchantId], references: [id])
+//     store    Store    @relation(fields: [storeId], references: [id])
+//     // Define User model relation here if User model is available
+// }
+
+// model Contact {
+//     id                Int       @id @default(autoincrement())
+//     nameEn            String?   @db.VarChar(100) // English name
+//     nameAr            String?   @db.VarChar(100) // Arabic name
+//     mobile            BigInt? // Mobile number
+//     email             String?   @db.VarChar(50) // Email address
+//     city              String?   @db.VarChar(50) // City
+//     utm               String?   @db.VarChar(400) // UTM parameters
+//     interestCategory  String?   @db.VarChar(100) // Interest category
+//     contactPreference String?   @db.VarChar(50) // Contact preference
+//     createdAt         DateTime? @default(now()) // Timestamp for creation
+//     updatedAt         DateTime? @updatedAt // Timestamp for updates
+// }
+
+// model ApplicationLog {
+//     logId        Int      @id @default(autoincrement()) @map("log_id")
+//     logTimestamp DateTime @default(now()) @map("log_timestamp") // Default is now()
+//     logLevel     String?  @db.VarChar(50) // Log level
+//     message      String?  @db.Text // Log message
+//     context      Json? // Context as JSONB
+// }
+
+// model ActivityLog {
+//     id           BigInt   @id @default(autoincrement()) // Primary key
+//     userId       BigInt   @map("user_id") // User ID
+//     activityType String?  @db.VarChar(255) // Type of activity
+//     description  String?  @db.Text // Description of the activity
+//     createdAt    DateTime @default(now()) @map("created_at") // Creation timestamp
+//     updatedAt    DateTime @default(now()) @map("updated_at") // Update timestamp
+// }
+
+// model Allowance {
+//     itemId             Int      @map("item_id") // Reference to item ID
+//     discountPercent    Decimal? @map("discount_percent") // Discount percentage
+//     discountReasonCode String?  @map("discount_reason_code") // Reason code for discount
+//     discountReason     String?  @map("discount_reason") // Description for discount reason
+//     chargePercent      Decimal? @map("charge_percent") // Charge percentage
+//     chargeReasonCode   String?  @map("charge_reason_code") // Reason code for charge
+//     chargeReason       String?  @map("charge_reason") // Description for charge reason
+//     createdAt          DateTime @default(now()) @map("created_at") // Created timestamp
+//     updatedAt          DateTime @default(now()) @map("updated_at") // Updated timestamp
+
+//     @@id([itemId]) // Composite primary key if itemId is unique
+// }
+
+// model Sale {
+//     id         Int      @id @default(autoincrement()) // Unique identifier for Sale
+//     storeId    Int      @map("store_id") // Reference to the store
+//     merchantId Int      @map("merchant_id") // Reference to the merchant
+//     userId     Int      @map("user_id") // Reference to the user
+//     createdAt  DateTime @default(now()) @map("created_at") // Created timestamp
+//     updatedAt  DateTime @default(now()) @map("updated_at") // Updated timestamp
+
+//     Items Item[] @relation("SaleItems") // Relationship to Items
+//     Item  Item[]
+
+//     @@index([storeId]) // Create an index on storeId for performance
+// }
+
+// model Item {
+//     id                         Int      @id @default(autoincrement()) // Unique identifier for Item
+//     salesId                    Int      @map("sales_id") // Reference to the sale
+//     lineId                     Int      @map("line_id") // Line ID for the item
+//     productId                  Int      @map("product_id") // Reference to the product
+//     quantity                   Int      @map("quantity") // Quantity of the item
+//     unit                       String?  @db.Text // Unit type
+//     price                      Decimal  @db.Numeric(10, 2) // Price of the item
+//     netPrice                   Decimal  @db.Numeric(18, 2) // Net price of the item
+//     netPriceCurrencyCode       String   @map("net_price_currency_code") // Currency code for net price
+//     netAmount                  Decimal  @db.Numeric(18, 2) // Net amount
+//     netAmountCurrencyCode      String   @map("net_amount_currency_code") // Currency code for net amount
+//     vatAmount                  Decimal  @db.Numeric(18, 2) // VAT amount
+//     vatAmountCurrencyCode      String   @map("vat_amount_currency_code") // Currency code for VAT amount
+//     totalAmount                Decimal  @db.Numeric(18, 2) // Total amount
+//     totalAmountCurrencyCode    String   @map("total_amount_currency_code") // Currency code for total amount
+//     vatCategoryCode            String   @map("vat_category_code") // VAT category code
+//     vatRate                    Decimal  @db.Numeric(5, 2) // VAT rate
+//     taxSchemeId                String   @map("tax_scheme_id") // Tax scheme identifier
+//     baseAmount                 Decimal? @db.Numeric(18, 2) // Base amount
+//     baseAmountCurrencyCode     String?  @map("base_amount_currency_code") // Currency code for base amount
+//     discountAmount             Decimal? @db.Numeric(18, 2) // Discount amount
+//     discountAmountCurrencyCode String?  @map("discount_amount_currency_code") // Currency code for discount amount
+//     chargeAmount               Decimal? @db.Numeric(18, 2) // Charge amount
+//     chargeAmountCurrencyCode   String?  @map("charge_amount_currency_code") // Currency code for charge amount
+//     createdAt                  DateTime @default(now()) @map("created_at") // Created timestamp
+//     updatedAt                  DateTime @default(now()) @map("updated_at") // Updated timestamp
+
+//     // Single relationship to Sale using salesId
+//     Sale   Sale? @relation(fields: [salesId], references: [id]) // Relationship to Sale
+//     Sale   Sale? @relation(fields: [saleId], references: [id])
+//     saleId Int?
+
+//     @@index([salesId]) // Create an index on salesId for performance
+// }
+
+// model Activity {
+//     id             Int            @id @default(autoincrement())
+//     name_en        String         @db.VarChar(255)
+//     name_ar        String         @db.VarChar(255)
+//     createdAt      DateTime       @default(now()) @db.Timestamp(0)
+//     updatedAt      DateTime       @default(now()) @updatedAt @db.Timestamp(0)
+//     userActivities UserActivity[]
+// }
+
+// model Role {
+//     id        Int        @id @default(autoincrement())
+//     name_en   String     @db.VarChar(100)
+//     name_ar   String     @db.VarChar(100)
+//     status    String?    @db.VarChar(50)
+//     createdAt DateTime   @default(now()) @db.Timestamp(0)
+//     updatedAt DateTime   @default(now()) @updatedAt @db.Timestamp(0)
+//     userRoles UserRole[]
+// }
+
+// model User {
+//     id              Int            @id @default(autoincrement())
+//     username        String         @unique @db.VarChar(255)
+//     passwordHash    String         @db.Text
+//     firstNameEn     String?        @db.VarChar(255)
+//     lastNameEn      String?        @db.VarChar(255)
+//     firstNameAr     String?        @db.VarChar(255)
+//     lastNameAr      String?        @db.VarChar(255)
+//     email           String?        @unique @db.VarChar(255)
+//     mobileNo        String?        @unique @db.VarChar(255)
+//     status          String?        @db.VarChar(255)
+//     setPasswordFlag Boolean        @default(false)
+//     createdAt       DateTime       @default(now()) @db.Timestamp(0)
+//     updatedAt       DateTime       @default(now()) @updatedAt @db.Timestamp(0)
+//     userActivities  UserActivity[]
+//     userRoles       UserRole[]
+// }
+
+// model UserActivity {
+//     userId     Int
+//     activityId Int
+//     createdAt  DateTime @default(now()) @db.Timestamp(0)
+//     updatedAt  DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+//     user     User     @relation(fields: [userId], references: [id])
+//     activity Activity @relation(fields: [activityId], references: [id])
+
+//     @@id([userId, activityId])
+// }
+
+// model UserRole {
+//     userId    Int
+//     roleId    Int
+//     createdAt DateTime @default(now()) @db.Timestamp(0)
+//     updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+//     user User @relation(fields: [userId], references: [id])
+//     role Role @relation(fields: [roleId], references: [id])
+
+//     @@id([userId, roleId])
+// }
+
+// model DefaultValue {
+//     process_type String @default("reporting:1.0") @db.Text
+// }
+
+// model Invoice {
+//     id                    Int      @id @default(autoincrement())
+//     invoice_no            String   @db.Text
+//     invoice_uuid          String   @db.Text
+//     invoice_date          DateTime @db.Date
+//     invoice_time          DateTime @db.Time(0)
+//     invoice_type          String   @db.Text
+//     invoice_sub_type      String   @db.Text
+//     invoice_currency_code String   @db.Text
+//     invoice_counter_id    Int
+//     previous_invoice_hash String   @db.Text
+//     mime_code             String?  @db.Text
+//     csid                  String?  @db.Text
+//     vat_category          String   @db.Text
+//     tax_scheme_id         String   @db.Text
+//     ref_invoice_no        String?  @db.Text
+//     note_reason           String?  @db.Text
+//     discount_flag         Boolean?
+//     charge_indicator      Boolean?
+//     created_at            DateTime @default(now()) @db.Timestamp(0)
+//     updated_at            DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+//     invoiceAmounts    InvoiceAmounts?    @relation(fields: [id], references: [invoice_id])
+//     invoiceAllowances InvoiceAllowance[] @relation("InvoiceAllowances")
+// }
+
+// model InvoiceAllowance {
+//     id                   Int      @id @default(autoincrement())
+//     invoice_id           Int
+//     discount_percent     Decimal? @db.Numeric(10, 2)
+//     discount_vat_vatgory String?  @db.Text
+//     discount_vat_percent Decimal? @db.Numeric(10, 2)
+//     discount_reason_code String?  @db.Text
+//     discount_reason      String?  @db.Text
+//     discount_tax_scheme  String?  @db.Text
+//     charge_percent       Decimal? @db.Numeric(10, 2)
+//     charge_vat_vatgory   String?  @db.Text
+//     charge_vat_percent   Decimal? @db.Numeric(10, 2)
+//     charge_reason_code   String?  @db.Text
+//     charge_reason        String?  @db.Text
+//     charge_tax_scheme    String?  @db.Text
+
+//     invoice Invoice @relation(fields: [invoice_id], references: [id])
+// }
+
+// model InvoiceAmounts {
+//     invoice_id                          Int      @id
+//     total_amount                        Decimal  @db.Numeric(18, 2)
+//     total_amount_currency_code          String   @db.Text
+//     discount_amount                     Decimal? @db.Numeric(18, 2)
+//     discount_amount_currency_code       String?  @db.Text
+//     charge_amount                       Decimal? @db.Numeric(18, 2)
+//     charge_amount_currency_code         String?  @db.Text
+//     net_amount                          Decimal  @db.Numeric(18, 2)
+//     net_amount_currency_code            String   @db.Text
+//     total_vat_amount                    Decimal  @db.Numeric(18, 2)
+//     total_vat_amount_currency_code      String   @db.Text
+//     total_amount_with_vat               Decimal  @db.Numeric(18, 2)
+//     total_amount_with_vat_currency_code String   @db.Text
+//     taxable_amount                      Decimal  @db.Numeric(18, 2)
+//     taxable_amount_currency_code        String   @db.Text
+//     tax_amount                          Decimal  @db.Numeric(18, 2)
+//     tax_amount_currency_code            String   @db.Text
+//     payment_due_amount                  Decimal  @db.Numeric(18, 2)
+//     created_at                          DateTime @default(now()) @db.Timestamp(0)
+//     updated_at                          DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+//     invoice Invoice @relation(fields: [invoice_id], references: [id])
+// }

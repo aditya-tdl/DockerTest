@@ -1,0 +1,199 @@
+import React, { useState, useEffect } from "react";
+import { Box, Button, Stack, Typography, Radio } from "@mui/material";
+import Grid from "@mui/material/Grid2";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import slide1 from "../../assets/1.png"; // Replace with actual images
+import { styled } from "@mui/system";
+const content = [
+  {
+    title: "Why Aren’t You Using Data To Grow Sales Like ",
+    subtitle: "Big Supermarkets?",
+    image: slide1,
+    button: "Boost Your Sales Now",
+  },
+  {
+    title: "Are you thinking of ways to ",
+    subtitle: "Reduce Cost & Increase Profit?",
+    image: slide1,
+    button: "Find Out What Data Answers",
+  },
+  {
+    title: "Are your invoices ",
+    subtitle: "ZATCA Compliant",
+    image: slide1,
+    button: "Ensure Your Compliance Now Almost Free",
+  },
+];
+const GridContainer = styled(Grid)(({ theme }) => ({
+  height: "100%", // Fill the parent height
+  width: "100%", // Fill the parent width
+  position: "relative", // To position children absolutely
+  display: "flex",
+  flexDirection: "row",
+}));
+
+const Carousel1 = ({ onNext, onPrev }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+  const leftSlideChangeHandler = () => {
+    if (!isAnimating) {
+      setIsAnimating(true);
+      setActiveImage((prev) => (prev === 0 ? content.length - 1 : prev - 1));
+      setTimeout(() => setIsAnimating(false), 500); // Delay matches CSS animation duration
+    }
+  };
+
+  const rightSlideChangeHandler = () => {
+    if (!isAnimating) {
+      setIsAnimating(true);
+      setActiveImage((prev) => (prev === content.length - 1 ? 0 : prev + 1));
+      setTimeout(() => setIsAnimating(false), 500);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveImage((prev) => (prev === content.length - 1 ? 0 : prev + 1));
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <Grid
+      container
+      sx={{
+        position: "relative",
+      }}
+    >
+      {/* Left Section: Text */}
+      <Grid
+        size={{ xs: 6.5, md: 6.5 }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+          color: "#000",
+          height: { md: "600px", xs: "250px" },
+        }}
+      >
+        <Stack sx={{ display: "flex", px: { xs: 5, md: 15 } }}>
+          <Box className="fade-in-out" key={activeImage}>
+            <Typography
+              gutterBottom
+              sx={{
+                fontWeight: 600,
+                fontSize: { xs: "15px", md: "42px" },
+              }}
+            >
+              {content[activeImage].title}
+              <span style={{ color: "#51B56D" }}>
+                {content[activeImage].subtitle}
+              </span>
+            </Typography>
+          </Box>
+        </Stack>
+        <Box
+          sx={{
+            position: "absolute",
+            left: { xs: 36, md: 120 },
+            top: { xs: "80%", sm: "60%", md: "78%" },
+            transform: "translateY(-50%)",
+            zIndex: 100,
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={onNext}
+            endIcon={
+              <ArrowForwardIosIcon
+                sx={{
+                  color: "#FF914D",
+                  fontSize: { md: "15px", xs: "0px" },
+                }}
+              />
+            }
+            size="small"
+            sx={{
+              color: "#FF914D",
+              fontWeight: 600,
+              borderColor: "#FF914D",
+              textTransform: "none",
+              fontSize: { xs: "9px", md: "15px" },
+              "&:hover": {
+                borderColor: "#FF914D",
+                backgroundColor: "rgba(255, 145, 77, 0.1)",
+              },
+            }}
+          >
+            {content[activeImage].button}
+          </Button>
+        </Box>
+
+        {/* Left Arrow */}
+        <Box
+          sx={{
+            position: "absolute",
+            left: { xs: 5, md: 30 },
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 100,
+          }}
+          onClick={leftSlideChangeHandler}
+        >
+          <ArrowForwardIosIcon
+            sx={{
+              color: "#00000080",
+              fontSize: { md: "32px", xs: "20px" },
+              rotate: "180deg",
+            }}
+          />
+        </Box>
+      </Grid>
+
+      {/* Right Section: Image */}
+      <Grid
+        size={{ xs: 5, md: 5 }}
+        sx={{
+          backgroundColor: "#fff",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          pl: { md: 10, xs: 0 },
+        }}
+      >
+        <Box key={activeImage}>
+          <img
+            src={content[activeImage].image}
+            alt={content[activeImage].title}
+            style={{
+              objectFit: "contain",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </Box>
+
+        {/* Right Arrow */}
+        <Box
+          sx={{
+            position: "absolute",
+            right: { xs: 5, md: 30 },
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 100,
+          }}
+          onClick={rightSlideChangeHandler}
+        >
+          <ArrowForwardIosIcon
+            sx={{
+              color: "#00000080",
+              fontSize: { md: "32px", xs: "20px" },
+            }}
+          />
+        </Box>
+      </Grid>
+    </Grid>
+  );
+};
+
+export default Carousel1;

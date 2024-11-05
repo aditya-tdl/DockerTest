@@ -1,0 +1,177 @@
+.fade-in-out {
+  animation: fade 0.5s ease-in-out;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* Define constants for easy reference */
+:root {
+  --text-color: #000;
+  --bg-color: #fff;
+  --button-color: #ff914d;
+  --button-hover-bg: rgba(255, 145, 77, 0.1);
+  --arrow-color: #00000080;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.left-section,
+.right-section {
+  width: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-color);
+}
+
+.left-section {
+  color: var(--text-color);
+  height: 600px;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .left-section {
+    height: 300px;
+  }
+}
+
+.text-content {
+  padding: 0 15%;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 42px;
+}
+
+.subtitle {
+  color: #51b56d;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 17px;
+  }
+}
+
+.scroll-btn-container {
+  position: absolute;
+  left: 120px;
+  top: 78%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .scroll-btn-container {
+    left: 16px;
+    top: 80%;
+  }
+}
+
+.scroll-btn {
+  border: 1px solid var(--button-color);
+  background-color: transparent;
+  color: var(--button-color);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 5px 10px;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.scroll-btn:hover {
+  background-color: var(--button-hover-bg);
+}
+
+@media (max-width: 768px) {
+  .scroll-btn {
+    font-size: 9px;
+  }
+}
+
+.arrow-left,
+.arrow-right {
+  font-size: 32px;
+  color: var(--arrow-color);
+  cursor: pointer;
+}
+
+.left-arrow {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .left-arrow {
+    left: 5px;
+  }
+  .arrow-left {
+    font-size: 20px;
+    transform: rotate(180deg);
+  }
+}
+
+.right-section {
+  height: 600px;
+}
+
+@media (max-width: 768px) {
+  .right-section {
+    height: 300px;
+  }
+}
+
+.image-content {
+  object-fit: cover;
+  width: 75%;
+  height: 75%;
+  max-width: 500px;
+  max-height: 500px;
+}
+
+@media (max-width: 768px) {
+  .image-content {
+    max-width: 300px;
+    max-height: 300px;
+  }
+}
+
+.right-arrow {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .right-arrow {
+    right: 5px;
+  }
+  .arrow-right {
+    font-size: 20px;
+  }
+}
+
